@@ -48,17 +48,51 @@ function handleResultValidation() {
     return false;
 }
 
-function computerMove() {
-    // Find the first available cell and make the move
-    let availableCells = board.map((val, index) => val === '' ? index : null).filter(val => val !== null);
-    if (availableCells.length > 0) {
-        let randomIndex = availableCells[Math.floor(Math.random() * availableCells.length)];
-        board[randomIndex] = 'O';
-        cells[randomIndex].innerText = 'O';
+function findWinningMove(player) {
+    // Look for an opportunity to win when it's computer turn
+    for (let i = 0; i < winningConditions.length; i++) {
+        const winCondition = winningConditions[i];
+        let a = board[winCondition[0]];
+        let b = board[winCondition[1]];
+        let c = board[winCondition[2]];
 
-        if (!handleResultValidation()) {
-            currentPlayer = 'X'; // Switch back to human player
+        // If two O are aligned plays the third
+        if (a === player && b === player && c === '') return winCondition[2];
+        if (a === player && c === player && b === '') return winCondition[1];
+        if (b === player && c === player && a === '') return winCondition[0];
+    }
+    return null;
+}
+
+function computerMove() {
+    if (!isGameActive) return;
+
+    // Look for winning opportunity
+    let winningMove = findWinningMove('O');
+    
+    // If found plays it
+    if (winningMove !== null) {
+        board[winningMove] = 'O';
+        cells[winningMove].innerText = 'O';
+    } else {
+        // Else check if human is about to win and block it
+        let blockingMove = findWinningMove('X');
+        if (blockingMove !== null) {
+            board[blockingMove] = 'O';
+            cells[blockingMove].innerText = 'O';
+        } else {
+            // Else plays randomly
+            let availableCells = board.map((val, index) => val === '' ? index : null).filter(val => val !== null);
+            if (availableCells.length > 0) {
+                let randomIndex = availableCells[Math.floor(Math.random() * availableCells.length)];
+                board[randomIndex] = 'O';
+                cells[randomIndex].innerText = 'O';
+            }
         }
+    }
+
+    if (!handleResultValidation()) {
+        currentPlayer = 'X';  // Then human turn again
     }
 }
 
